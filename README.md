@@ -2,6 +2,8 @@
 
 Este projeto implementa um cartão de aniversário interativo em formato de site, com contagem de tempo desde o início de um relacionamento, slides de fotos e mensagens, animações de virada de carta e player de música ambiente.
 
+Link: https://xaxa-site-davi-ramos-ferreiras-projects.vercel.app/
+
 ## Estrutura
 
 * **index.html**: Arquivo principal com toda a marcação HTML, estilos em `<style>` e scripts em `<script>`.
