@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartão de Aniversário Especial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .titulo {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            color: #ff3366;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .contador {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .contador p {
+            text-align: center;
+            color: #ff3366;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .contador-numeros {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .contador-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contador-valor {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .contador-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .cartao-externo {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            min-height: 500px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .cartao {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            transition: transform 1s ease;
+        }
+
+        /* Capa do cartão (estado fechado) */
+        .capa {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+            transform-origin: left;
+            z-index: 100;
+        }
+
+        .capa-frente, .capa-tras {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+        }
+
+        .capa-frente {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .capa-frente h2 {
+            margin-bottom: 20px;
+            font-size: 3rem;
+        }
+
+        .capa-frente p {
+            font-size: 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            animation: pulse 2s infinite;
+        }
+
+        .capa-tras {
+            background: #f8f8f8;
+            transform: rotateY(180deg);
+        }
+
+        .capa.aberto {
+            transform: rotateY(-180deg);
+        }
+
+        /* Estilos para os slides internos */
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.8s ease;
+            transform: translateX(100%);
+            visibility: hidden; /* Adicionado para corrigir o bug */
+        }
+
+        .slide.ativo {
+            opacity: 1;
+            transform: translateX(0);
+            visibility: visible; /* Slide visível quando ativo */
+            z-index: 50; /* Garantir que fique acima dos outros */
+        }
+
+        .slide.anterior {
+            transform: translateX(-100%);
+            opacity: 0;
+            visibility: hidden; /* Slide invisível quando é anterior */
+        }
+
+        .slide-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            padding: 10px;
+        }
+
+        .slide-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-data {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            color: #ff3366;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .slide-texto {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .coracao {
+            color: #ff3366;
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            animation: pulsar 1.5s infinite;
+            z-index: 10;
+        }
+
+        @keyframes pulsar {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .botoes {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            padding: 15px 0;
+        }
+
+        .botao {
+            background-color: #ff3366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .botao:hover {
+            background-color: #e02c5a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .botao:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .footer-fofinho {
+        width: 100%;
+        background: linear-gradient(135deg, #ffe5ec 0%, #ffd1dd 100%);
+        padding: 20px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Montserrat', sans-serif;
+        }
+
+        .footer-fofinho .footer-content p {
+        color: #ff3366;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        }
+
+        .footer-fofinho .hearts {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        }
+
+        .footer-fofinho .heart {
+        font-size: 1.5rem;
+        animation: bater 1s infinite;
+        display: inline-block;
+        }
+
+        /* animação de bater coração */
+        @keyframes bater {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.3); }
+        }
+
+        /* pequenos corações flutuando para cima */
+        .footer-fofinho::before,
+        .footer-fofinho::after {
+        content: '💕';
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.7;
+        animation: flutuar 4s infinite ease-in-out;
+        }
+
+        .footer-fofinho::before {
+        left: 10%;
+        bottom: 10%;
+        animation-delay: 0s;
+        }
+
+        .footer-fofinho::after {
+        right: 10%;
+        bottom: 20%;
+        animation-delay: 2s;
+        }
+
+        @keyframes flutuar {
+        0%   { transform: translateY(0) scale(1); opacity: 0.7; }
+        50%  { transform: translateY(-30px) scale(1.1); opacity: 0.4; }
+        100% { transform: translateY(0) scale(1); opacity: 0.7; }
+        }
+
+
+        @media (max-width: 768px) {
+            .titulo {
+                font-size: 2.5rem;
+            }
+            
+            .slide-image {
+                max-height: 200px;
+            }
+            
+            .contador-numeros {
+                flex-wrap: wrap;
+            }
+            
+            .contador-item {
+                margin: 5px;
+            }
+            
+            .slide, .cartao {
+                min-height: 400px;
+            }
+
+            .capa-frente h2 {
+                font-size: 2.5rem;
+            }
+
+            .capa-frente p {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .titulo {
+                font-size: 2rem;
+            }
+            
+            .slide-data {
+                font-size: 1.2rem;
+            }
+            
+            .slide-texto {
+                font-size: 0.9rem;
+            }
+            
+            .contador-valor {
+                font-size: 1.2rem;
+            }
+            
+            .contador-label {
+                font-size: 0.8rem;
+            }
+            
+            .slide, .cartao {
+                min-height: 350px;
+            }
+
+            .capa-frente h2 {
+                font-size: 2rem;
+            }
+
+            .capa-frente p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="titulo">Feliz Aniversário, XayXay!</h1>
+    
+    <div class="contador">
+        <p>Tempo juntos desde 24 de fevereiro de 2023:</p>
+        <div class="contador-numeros">
+            <div class="contador-item">
+                <span id="anos" class="contador-valor">0</span>
+                <span class="contador-label">Anos</span>
+            </div>
+            <div class="contador-item">
+                <span id="dias" class="contador-valor">0</span>
+                <span class="contador-label">Dias</span>
+            </div>
+            <div class="contador-item">
+                <span id="horas" class="contador-valor">0</span>
+                <span class="contador-label">Horas</span>
+            </div>
+            <div class="contador-item">
+                <span id="minutos" class="contador-valor">0</span>
+                <span class="contador-label">Minutos</span>
+            </div>
+            <div class="contador-item">
+                <span id="segundos" class="contador-valor">0</span>
+                <span class="contador-label">Segundos</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="cartao-externo">
+        <div class="coracao">❤️</div>
+        <div id="cartao" class="cartao">
+            <div class="capa">
+                <div class="capa-frente">
+                    <h2>Para Você</h2>
+                    <p>Clique para abrir</p>
+                </div>
+                <div class="capa-tras"></div>
+            </div>
+            <!-- Os slides serão inseridos aqui pelo JavaScript -->
+        </div>
+    </div>
+    
+    <div class="botoes">
+        <button id="anterior" class="botao" disabled>Anterior</button>
+        <button id="proximo" class="botao" disabled>Próximo</button>
+    </div>
+
+    <footer class="footer-fofinho">
+        <div class="footer-content">
+          <p>Feito único e exclusivamente para Xaxa por Zizico</p>
+          <div class="hearts">
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+          </div>
+        </div>
+      </footer>
+      
+    
+    <script>
+        // Dados das fotos - Substitua com suas próprias fotos e textos
+        const fotos = [
+            {
+                imagem: "img/Imagem do WhatsApp de 2025-04-25 à(s) 14.50.40_3cd9f5bc.jpg",
+                data: "Para o seu 8 de Maio de 2025",
+                texto: "Oi, xaxa. Quis fazer algo especial para o seu aniversário, e pensei: por que não criar um site só pra você? Algo que tente, ao menos um pouquinho, mostrar o tamanho do amor que eu sinto. Eu te amo tanto... mais do que talvez você consiga imaginar. Estar ao seu lado é o que me faz feliz, e eu quero estar aqui por você sempre, em todos os momentos. Que essa comemoração seja só a primeira de muitas que ainda vamos viver juntinhos. Guarde essa pequena homenagem com carinho, meu anjo."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0012.jpg", // Substitua pelo URL da sua imagem
+                data: "21 de Junho de 2023",
+                texto: "O dia do São João da nossa escola, um dia que eu nunca vou esquecer, dançamos forrózinho juntos. kkk"
+            },
+            {
+                imagem: "img/IMG-20250425-WA0008.jpg", // Substitua pelo URL da sua imagem
+                data: "7 de Setembro de 2023",
+                texto: "O dia que a senhorita conheceu Jpeixes e segurou ele no braço, vai chegar uma hora que você vai dizer a ele 'te segurei no braço menino'."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0011.jpg", // Substitua pelo URL da sua imagem
+                data: "25 de Outubro de 2023",
+                texto: "O dia do Culto ecumênico do CSE, a senhora estava linda esse dia, todos os dias a senhora está mas esse..."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0009.jpg", // Substitua pelo URL da sua imagem
+                data: "14 de Novembro de 2023",
+                texto: "O dia da nossa formatura, você estava simplesmente perfeita, seu sorriso iluminou todo o lugar."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0010.jpg", // Substitua pelo URL da sua imagem
+                data: "24 de Fevereiro de 2024",
+                texto: "No dia do nosso primeiro aniversário que nos conhecemos. Comemorando o início de mais vários anos juntos."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0015.jpg", // Substitua pelo URL da sua imagem
+                data: "1 de Junho de 2024",
+                texto: "O dia que fomos ver o nosso time ganhar a champions (a senhora não torce para o city e ponto) Simplesmente um dos dias mais incriveis da minha vida, comemorar aquele título do seu lado foi perfeito."
+            },
+            {
+                imagem: "img/Imagem do WhatsApp de 2025-04-25 à(s) 15.12.49_a53da219.jpg", // Substitua pelo URL da sua imagem
+                data: "10 de Junho de 2024",
+                texto: "O dia do aniversário de Jpeixes, foi tudo muito lindo, principalmente com a senhora lá."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0016.jpg", // Substitua pelo URL da sua imagem
+                data: "22 de Junho de 2024",
+                texto: "Um dia estranho e corrido, mas pelo menos tem essa foto linda nossa."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0017.jpg", // Substitua pelo URL da sua imagem
+                data: "13 de Novembro de 2024",
+                texto: "Tentaram fazer surpresa para mim mas não conseguiram, essa é a única foto que eu tenho de nós dois nesse dia."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0014.jpg", // Substitua pelo URL da sua imagem
+                data: "15 de Janeiro de 2025",
+                texto: "O TANDO DE GALINHA QUE A SENHORA ASSASSINOU NESSE DIA NÃO ESTÁ ESCRITO!!! até o garçom se assustou, um dia especial do lado da garota que mais gosta de coração de galinha."
+            },
+            {
+                imagem: "img/IMG-20250425-WA0018.jpg", // Substitua pelo URL da sua imagem
+                data: "8 de Fevereiro de 2025",
+                texto: "A nossa última foto juntos, comemorando o segundo ano de amizade, te amo xaxa!"
+            },
+            {
+                imagem: "img/Imagem do WhatsApp de 2024-02-27 à(s) 22.54.13_8a81581b.jpg",
+                data: "8 de Maio de 2025",
+                texto: "É claro que existem muitos outros momentos que dá para adicionar, mas todo momento que eu vivo com a senhora é especial, então, seria infinitos slides, te amo xaxa. Feliz aniversário! do seu garoto de programa para somente você!"
+            }
+            
+        ];
+
+        let slideAtual = 0;
+        let cartaoAberto = false;
+        const cartao = document.getElementById('cartao');
+        const capa = document.querySelector('.capa');
+        const btnAnterior = document.getElementById('anterior');
+        const btnProximo = document.getElementById('proximo');
+
+        // Função para criar os slides
+        function criarSlides() {
+            // Agora, adicionamos os slides internos
+            fotos.forEach((foto, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.style.zIndex = 10 - index; // Para garantir que o slide atual esteja acima dos outros
+                
+                slide.innerHTML = `
+                    <div class="slide-content">
+                        <img src="${foto.imagem}" alt="Momento especial" class="slide-image">
+                        <div class="slide-data">${foto.data}</div>
+                        <p class="slide-texto">${foto.texto}</p>
+                    </div>
+                `;
+                
+                cartao.appendChild(slide);
+            });
+            
+            // O primeiro slide estará visível assim que o cartão for aberto
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length > 0) {
+                slides[0].classList.add('ativo');
+            }
+        }
+
+        // Função para atualizar os botões (habilitar/desabilitar)
+        function atualizarBotoes() {
+            btnAnterior.disabled = !cartaoAberto || slideAtual === 0;
+            btnProximo.disabled = !cartaoAberto || slideAtual === fotos.length - 1;
+        }
+
+        // Função para abrir o cartão
+        function abrirCartao() {
+            if (!cartaoAberto) {
+                capa.classList.add('aberto');
+                cartaoAberto = true;
+                
+                // Ativa os botões após a abertura do cartão
+                setTimeout(() => {
+                    atualizarBotoes();
+                }, 1000); // Tempo igual à duração da animação da capa
+            }
+        }
+
+        // Função para ir para o slide anterior
+        function slidAnterior() {
+            if (cartaoAberto && slideAtual > 0) {
+                const slides = document.querySelectorAll('.slide');
+                
+                // Remove as classes atuais
+                slides[slideAtual].classList.remove('ativo');
+                
+                // Atualiza o slide atual
+                slideAtual--;
+                
+                // Adiciona as novas classes após um pequeno atraso para permitir a transição
+                setTimeout(() => {
+                    slides[slideAtual].classList.remove('anterior');
+                    slides[slideAtual].classList.add('ativo');
+                }, 50);
+                
+                atualizarBotoes();
+            }
+        }
+
+        // Função para ir para o próximo slide
+        function slideProximo() {
+            if (cartaoAberto && slideAtual < fotos.length - 1) {
+                const slides = document.querySelectorAll('.slide');
+                
+                // Remove as classes atuais e marca como anterior
+                slides[slideAtual].classList.remove('ativo');
+                slides[slideAtual].classList.add('anterior');
+                
+                // Atualiza o slide atual
+                slideAtual++;
+                
+                // Adiciona as novas classes após um pequeno atraso
+                setTimeout(() => {
+                    slides[slideAtual].classList.add('ativo');
+                }, 50);
+                
+                atualizarBotoes();
+            }
+        }
+
+        // Função para atualizar o contador de tempo
+        function atualizarContador() {
+            const dataInicio = new Date('2023-02-24T00:00:00');
+            const agora = new Date();
+            const diferenca = agora - dataInicio;
+            
+            const segundosTotais = Math.floor(diferenca / 1000);
+            const minutosTotais = Math.floor(segundosTotais / 60);
+            const horasTotais = Math.floor(minutosTotais / 60);
+            const diasTotais = Math.floor(horasTotais / 24);
+            const anosTotais = Math.floor(diasTotais / 365);
+            
+            const segundos = segundosTotais % 60;
+            const minutos = minutosTotais % 60;
+            const horas = horasTotais % 24;
+            const dias = diasTotais % 365;
+            
+            document.getElementById('anos').textContent = anosTotais;
+            document.getElementById('dias').textContent = dias;
+            document.getElementById('horas').textContent = horas;
+            document.getElementById('minutos').textContent = minutos;
+            document.getElementById('segundos').textContent = segundos;
+        }
+
+        // Inicializar o site
+        window.onload = function() {
+            criarSlides();
+            atualizarContador();
+            setInterval(atualizarContador, 1000);
+            atualizarBotoes(); // Inicialmente botões desativados até que o cartão seja aberto
+            
+            // Adicionar evento de clique à capa
+            document.querySelector('.capa-frente').addEventListener('click', abrirCartao);
+            btnAnterior.addEventListener('click', slidAnterior);
+            btnProximo.addEventListener('click', slideProximo);
+        };
+
+
+
+        function inserirPlayerMusicaLocal(caminhoArquivo) {
+        const container = document.getElementById('player');
+        if (!container) {
+        console.warn('Elemento com id "player" não encontrado no HTML');
+        return;
+        }
+
+        container.innerHTML = '';
+
+        const audio = document.createElement('audio');
+        audio.id = 'audio-musica';
+        audio.controls = false;
+        audio.style.display = 'none';
+        audio.autoplay = true;
+        audio.muted = true;
+        audio.volume = 0.2;
+        audio.src = caminhoArquivo;
+
+        container.appendChild(audio);
+
+        // Cria botão de mute/unmute
+        const botaoMute = document.createElement('button');
+        botaoMute.id = 'botao-mute';
+        botaoMute.textContent = '🔈 Som';
+        botaoMute.className = 'botao';
+        botaoMute.style.position = 'fixed';
+        botaoMute.style.bottom = '20px';
+        botaoMute.style.right = '20px';
+        botaoMute.style.zIndex = '1000';
+
+        botaoMute.addEventListener('click', () => {
+        audio.muted = !audio.muted;
+        botaoMute.textContent = audio.muted ? '🔇 Silenciado' : '🔈 Som';
+        });
+
+        document.body.appendChild(botaoMute);
+        }
+
+        window.onload = function () {
+        criarSlides();
+        atualizarContador();
+        setInterval(atualizarContador, 1000);
+        atualizarBotoes();
+
+        document.querySelector('.capa-frente').addEventListener('click', abrirCartao);
+        btnAnterior.addEventListener('click', slidAnterior);
+        btnProximo.addEventListener('click', slideProximo);
+
+        const playerDiv = document.createElement('div');
+        playerDiv.id = 'player';
+        document.body.insertBefore(playerDiv, document.body.firstChild);
+
+        inserirPlayerMusicaLocal('music/Debussy - Clair de Lune.mp3');
+
+        // Após primeira interação, remover mute
+        document.addEventListener('click', () => {
+        const audio = document.getElementById('audio-musica');
+        if (audio && audio.muted) {
+        audio.muted = false;
+        audio.play();
+        const botao = document.getElementById('botao-mute');
+        if (botao) botao.textContent = '🔈 Som';
+        }
+        }, { once: true });
+        };
+    </script>
+</body>
+</html>
